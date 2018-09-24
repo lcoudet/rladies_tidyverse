@@ -1,0 +1,45 @@
+---
+title: "Tidyverse"
+subtitle: "Manipulación y transformación de datos en R"
+author: "Lucía Coudet"
+date: "Septiembre de 2018"
+output:
+  beamer_presentation:
+    theme: "Frankfurt"
+    colortheme: "default"
+    fonttheme: "structurebold"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(gridExtra)
+library(kableExtra)
+```
+
+# Dplyr basics
+
+Existen \textbf{5 funciones} que permiten resolver una amplia gama de desafíos en lo que concierne a manipulación de datos:
+
+##
+
+-  Levantar observaciones por sus valores: `filter()`
+-  Reordenar filas: `arrange()`
+-  Levantar variables por sus nombres: `select()`
+-  Crear nuevas variables a partir de existentes `mutate()` (y `transmutate()`)
+-  Generar medidas de resúmen a partir de distintos valores: `summarise()`
+
+# Missing values
+
+# Tidy data 
+
+##
+
+-  `spread()` 
+-  `gather()`
+-  `separate()`
+
+
+
+
