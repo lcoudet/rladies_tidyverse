@@ -12,7 +12,7 @@ output:
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(gridExtra)
 library(kableExtra)
@@ -20,7 +20,7 @@ library(kableExtra)
 
 # Dplyr basics
 
-Existen \textbf{5 funciones} que permiten resolver una amplia gama de desafíos en lo que concierne a manipulación de datos:
+Existen \textbf{5 funciones} que nos permiten resolver una amplia gama de desafíos en lo que concierne a manipulación de datos:
 
 ##
 
@@ -30,16 +30,66 @@ Existen \textbf{5 funciones} que permiten resolver una amplia gama de desafíos e
 -  Crear nuevas variables a partir de existentes `mutate()` (y `transmutate()`)
 -  Generar medidas de resúmen a partir de distintos valores: `summarise()`
 
-# Missing values
-
 # Tidy data 
+
+Lamentablemente los datos suelen venir desordenados, entre otras cosas debido a que por lo general no se levantan desde una lógica adecuada. El paquete `tidyr` nos ofrece varias funciones útiles para ordenarlos.
 
 ##
 
--  `spread()` 
--  `gather()`
--  `separate()`
+-  Cuando las columnas son niveles de una variable las reunimos en una sola con `gather()`.
+- `spread()`: es el opuesto de `gather()`.
+- Si queremos separar los valores de una variable lo hacemos con `separate()`.
+
+# Otras funciones de dplyr: Joins 
+
+Y si queremos `matchear` (unir) los datos de la base en la cuál estamos trabajando con datos de otra, solo precisamos una variable de matcheo y una de la siguientes funciones que más se adecue a nuestro deseo, las cuales las podemos pensar como operaciones entre conjuntos:
+
+##
+
+- `full_join()`: unión de conjuntos.
+- `inner_join()`: intersección de conjuntos.
+- `left_join()`: Se queda con todas las filas de la primera base que se le pasa.
+- `right_join()`: Se queda con todas las filas de la segunda base que se le pasa.
+
+\textbf{\underline{Observación}:} Se generan`Na's` para el caso en que la variable de matcheo presenta valores dispares entre las bases que queremos joinear, según la función que seleccionemos. 
+
+# Base de datos utilizada
+
+Utilizamos una base de datos extraída del \textbf{Estudio Longitudinal de Bienestar en el Uruguay} llevado a cabo por el Instituto de Economía (iecon), el cual consiste en un relevamiento longitudinal representativo de los niños que concurren al sistema de educación primaria pública. 
+
+Se recoge información  referente a múltiples dimensiones del bienestar de los niños en la muestra así como también del resto de los integrantes de sus hogares, entre los que se destacan: 
+
+-  situación nutricional.
+-  habilidades cognitivas y no cognitivas.
+-  imaginación; razonamiento y sentimientos. 
+-  actividades de ocio einteracción social.
+-  logros educativos.
+-  ingresos.
+-  calidad de la vivienda y bienestar subjetivo, entre otros.
+
+# Relevamiento de información
+
+## Tres "Olas" 
+-  La primera realizada en el año 2004 a 3000 niños del primer grado de escuela.
+-  La segunda realizada en el año 2005 a los mismos niños analizados en la primera ola.
+-  La tercera realizada en el año 2012 a los mismo niños analizados en la primera ola.
 
 
+\textbf{Utilizamos la Tercer Ola de relevamiento}
+
+# Qué buscamos?
+
+##
+
+- Caracterización de los jefes de hogar.
+- Análisis de empoderamiento femenino en los arreglos familiares.
+
+# Paso 1: Leemos los datos
+
+Los datos están en un archivo .csv por lo que utilizamos la función `read_csv` del paquete `readr`.
+
+```{r}
+base <- readr::read_csv('Personas_Ola_3.csv')
+```
 
 
