@@ -20,7 +20,7 @@ library(kableExtra)
 
 # Dplyr basics
 
-Existen \textbf{5 funciones} que nos permiten resolver una amplia gama de desafíos en lo que concierne a manipulación de datos:
+Existen \textbf{6 funciones} que nos permiten resolver una amplia gama de desafíos en lo que concierne a manipulación de datos:
 
 ##
 
@@ -28,11 +28,13 @@ Existen \textbf{5 funciones} que nos permiten resolver una amplia gama de desafí
 -  Reordenar filas: `arrange()`
 -  Levantar variables por sus nombres: `select()`
 -  Crear nuevas variables a partir de existentes `mutate()` (y `transmutate()`)
+-  Agrupar observarciones con `group_by()`
 -  Generar medidas de resúmen a partir de distintos valores: `summarise()`
+ 
 
 # Tidy data 
 
-Lamentablemente los datos suelen venir desordenados, entre otras cosas debido a que por lo general no se levantan desde una lógica adecuada. El paquete `tidyr` nos ofrece varias funciones útiles para ordenarlos.
+Lamentablemente los datos suelen venir desordenados, entre otras cosas debido a que por lo general no se levantan desde una lógica adecuada para nosotros, los que los analizamos. El paquete `tidyr` nos ofrece varias funciones útiles para ordenarlos.
 
 ##
 
@@ -74,22 +76,81 @@ Se recoge información  referente a múltiples dimensiones del bienestar de los ni
 -  La segunda realizada en el año 2005 a los mismos niños analizados en la primera ola.
 -  La tercera realizada en el año 2012 a los mismo niños analizados en la primera ola.
 
+## Las olas contienen bases
+-  De \textbf{personas}, con información referente al niño y personas del hogar donde reside).
+-  De \textbf{hogares}, con información más enfocada al niño, sus capacidades de relacionamiento, emociones, amigos, etc.
 
-\textbf{Utilizamos la Tercer Ola de relevamiento}
+\textbf{Utilizamos la base de personas correspondiente a la Tercer Ola de relevamiento}
 
 # Qué buscamos?
 
 ##
 
-- Caracterización de los jefes de hogar.
-- Análisis de empoderamiento femenino en los arreglos familiares.
+AGREGAR
+
 
 # Paso 1: Leemos los datos
 
 Los datos están en un archivo .csv por lo que utilizamos la función `read_csv` del paquete `readr`.
 
 ```{r}
-base <- readr::read_csv('Personas_Ola_3.csv')
+personas <- readr::read_csv('Personas_Ola_3.csv')
+dim(personas)
 ```
 
+## Queremos quedarnos solo con algunas variables:
 
+-  Sexo.
+-  Edad.
+-  Situación conyugal.
+-  Nivel educativo que cursa o cursó.
+-  Ingresos.
+-  Ocupación principal / Tareas.
+-  Acceso a planes de ayuda económica o alimenticia
+
+# Seleccionamos columnas con select()
+
+Dos opciones: 
+
+- Si queremos seleccionar una variable ponemos su nombre.
+-  Si queremos sacar una variable ponemos su nombre con un signo de `-` adelante.
+-  Si queremos seleccionar (o sacar) un un rango seguido de columnas, por ej de la A a la F, lo hacemos con `A:F`, o bien `-(A:F)`.
+
+```{r}
+personas <- personas %>% select(-h13, -h11, -(h9b1:h9b8), 
+                                -(h4:h5), -h2, -h1, -g8b, 
+                                -g8a, -g7, -g3, -g2b, -f1)
+```
+
+# Filtramos observaciones con filter() y hacemos resúmenes por grupos
+
+La variable `nper` etiqueta con un número a cada miembro del hogar. Sospechamos que cuando toma valor 1 se trata del niño seleccionado en la muestra.
+
+Estos niños deberían tener todos menos de 20 años, por lo que filtramos la base por edad y agrupamos según `nper`.
+
+```{r}
+edades <- personas %>% filter(f11 < 20) %>% 
+      group_by(nper) %>% 
+      summarise(conteo = n()) 
+```
+
+# Filtramos observaciones con filter() y hacemos resúmenes por grupos
+
+```{r, echo=FALSE}
+knitr::kable(head(edades, 6))
+```
+
+`nper == 1` contiene 2137 observaciones, lo cuál coincide con la cantidad de niños en la muestra.
+
+Pero nos gustaría ordenar esa tabla según `conteo` en forma decreciente.
+Lo hacemos con la función `arrange()`.
+
+# Ordenamos filas con arrange()
+
+```{r}
+edades <- arrange(edades, desc(conteo))
+```
+
+```{r, echo=FALSE}
+knitr::kable(head(edades, 8))
+```
