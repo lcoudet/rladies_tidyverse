@@ -31,6 +31,12 @@ Existen \textbf{6 funciones} que nos permiten resolver una amplia gama de desafí
 -  Agrupar observarciones con `group_by()`
 -  Generar medidas de resúmen a partir de distintos valores: `summarise()`
  
+# Funciones útiles 
+
+-  `starts_with()`
+-  `ends_with()`
+-  `contains()`
+
 
 # Tidy data 
 
@@ -77,7 +83,7 @@ Se recoge información  referente a múltiples dimensiones del bienestar de los ni
 -  La tercera realizada en el año 2012 a los mismo niños analizados en la primera ola.
 
 ## Las olas contienen bases
--  De \textbf{personas}, con información referente al niño y personas del hogar donde reside).
+-  De \textbf{personas}, con información referente al niño y personas del hogar donde reside.
 -  De \textbf{hogares}, con información más enfocada al niño, sus capacidades de relacionamiento, emociones, amigos, etc.
 
 \textbf{Utilizamos la base de personas correspondiente a la Tercer Ola de relevamiento}
@@ -122,6 +128,32 @@ personas <- personas %>% select(-h13, -h11, -(h9b1:h9b8),
                                 -g8a, -g7, -g3, -g2b, -f1)
 ```
 
+# Seleccionamos columnas con select()
+
+Si por ejemplo queremos quitar de la base todas las variables que comienzan con la letra h, la función `starts_with()` nos resuelve el problema
+
+```{r, echo = FALSE}
+personas <- readr::read_csv('Personas_Ola_3.csv')
+```
+
+```{r}
+personas <- personas %>% select(-starts_with('h'))
+
+names(personas)
+```
+
+- `ends_with()` y `contains()` operan de forma análoga.
+
+```{r, echo = FALSE}
+personas <- readr::read_csv('Personas_Ola_3.csv')
+dim(personas)
+```
+
+# Renombramos columnas con rename
+
+Los nombres de las variables nos confunden, se los cambiamos con la función `rename()` del paquete `dplyr`.
+
+
 # Filtramos observaciones con filter() y hacemos resúmenes por grupos
 
 La variable `nper` etiqueta con un número a cada miembro del hogar. Sospechamos que cuando toma valor 1 se trata del niño seleccionado en la muestra.
@@ -154,3 +186,64 @@ edades <- arrange(edades, desc(conteo))
 ```{r, echo=FALSE}
 knitr::kable(head(edades, 8))
 ```
+
+# Jefes de hogar por sexo
+
+-  Filtramos la categoría 1 de la variable `f10` que corresponde a los jefes de hogar.
+-  Agrupamos por sexo.
+-  Contamos cuantos casos hay en cada categoría (9=NS/NC).
+-  Creamos una variable que indique el porcentaje.
+
+```{r}
+sexo <- personas %>% filter(f10 == 1) %>% 
+      group_by(f12) %>% 
+      summarise(conteo = n()) %>% 
+      mutate(porcentaje = round(conteo / sum(conteo), 2)*100)
+```
+
+
+```{r, echo=FALSE}
+knitr::kable(sexo)
+```
+
+# Joins
+
+Nos gustaría tener la variable \textbf{departamento} que indica el departamento al cuál pertenece el hogar de la muestra.
+
+Tenemos está información en la \textbf{base de Hogares} y una variable de matcheo que es `nform`, la cuál indica el \textbf{número de formulario} y vale lo mismo para todos los miembros del hogar.
+
+Nos interesa mantener todas las observaciones de la base de personas, y pegarles el departamento al cuál corresponden, por lo cual usamos la función `left_join`.
+
+# left_join()
+
+```{r}
+hogares <- readr::read_csv('Hogares_Ola_3.csv')
+```
+
+Podemos hacerlo en 2 pasos o en 1:
+
+\textbf{Opción 1}: Seleccionamos la columna que nos interesa y luego unimos las bases
+
+```{r, eval=FALSE}
+hogares <- hogares %>% select(nform, dpto_cod) 
+personas <- personas %>% left_join(hogares, 
+                                   by = 'nform')    
+```
+
+
+
+\textbf{Opción 2}: Anidamos funciones
+```{r}
+personas <- personas %>% 
+            left_join(select(hogares, nform, dpto_cod), 
+                      by = 'nform')
+```
+
+# Renmbramos columnas con rename()
+
+```{r}
+personas <- personas %>% 
+            dplyr::rename(depto = dpto_cod) 
+```
+
+\textbf{Observación}: Se igula el nombre nuevo al nombre viejo.
