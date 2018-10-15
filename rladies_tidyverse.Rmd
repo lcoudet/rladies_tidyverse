@@ -31,11 +31,15 @@ Existen \textbf{6 funciones} que nos permiten resolver una amplia gama de desafí
 -  Agrupar observarciones con `group_by()`
 -  Generar medidas de resúmen a partir de distintos valores: `summarise()`
  
-# Funciones útiles 
+# Funciones útiles - Select helpers
 
--  `starts_with()`
--  `ends_with()`
--  `contains()`
+Existen varias funciones que nos permiten seleccionar variables en función de sus nombres. Alguna de ellas son:
+
+## 
+
+-  `starts_with()`: empieza con un prefijo. 
+-  `ends_with()`: termina con un prefijo.
+-  `contains()`: contiene una determinada "string".
 
 
 # Tidy data 
@@ -125,7 +129,8 @@ Dos opciones:
 ```{r}
 personas <- personas %>% select(-h13, -h11, -(h9b1:h9b8), 
                                 -(h4:h5), -h2, -h1, -g8b, 
-                                -g8a, -g7, -g3, -g2b, -f1)
+                                -g8a, -g7, -g3, -g2b, -f1, -(f3:f9),
+                                -g2a, -g6, -h12)
 ```
 
 # Seleccionamos columnas con select()
@@ -153,6 +158,21 @@ dim(personas)
 
 Los nombres de las variables nos confunden, se los cambiamos con la función `rename()` del paquete `dplyr`.
 
+```{r}
+personas <- personas %>% 
+      dplyr::rename( sit.conyugal = f2,
+                     parent.jefe = f10,
+                     edad = f11,
+                     sexo = f12,
+                     dedicacion.p = g1,
+                     tipo.p = g4,
+                     tareas.p = g5,
+                     jub.pen = h3,
+                     transf.pais = h7,
+                     transf.ext = h8,
+                     afam = h9a,
+                     benef.esp = h10)
+```
 
 # Filtramos observaciones con filter() y hacemos resúmenes por grupos
 
@@ -161,7 +181,7 @@ La variable `nper` etiqueta con un número a cada miembro del hogar. Sospechamos 
 Estos niños deberían tener todos menos de 20 años, por lo que filtramos la base por edad y agrupamos según `nper`.
 
 ```{r}
-edades <- personas %>% filter(f11 < 20) %>% 
+edades <- personas %>% filter(edad < 20) %>% 
       group_by(nper) %>% 
       summarise(conteo = n()) 
 ```
@@ -189,14 +209,14 @@ knitr::kable(head(edades, 8))
 
 # Jefes de hogar por sexo
 
--  Filtramos la categoría 1 de la variable `f10` que corresponde a los jefes de hogar.
+-  Filtramos la categoría 1 de la variable `parent.jefe` que corresponde a los jefes de hogar.
 -  Agrupamos por sexo.
 -  Contamos cuantos casos hay en cada categoría (9=NS/NC).
 -  Creamos una variable que indique el porcentaje.
 
 ```{r}
-sexo <- personas %>% filter(f10 == 1) %>% 
-      group_by(f12) %>% 
+sexo <- personas %>% filter(parent.jefe == 1) %>% 
+      group_by(sexo) %>% 
       summarise(conteo = n()) %>% 
       mutate(porcentaje = round(conteo / sum(conteo), 2)*100)
 ```
@@ -239,7 +259,7 @@ personas <- personas %>%
                       by = 'nform')
 ```
 
-# Renmbramos columnas con rename()
+# Renombramos la variable departamento
 
 ```{r}
 personas <- personas %>% 
@@ -247,3 +267,48 @@ personas <- personas %>%
 ```
 
 \textbf{Observación}: Se igula el nombre nuevo al nombre viejo.
+
+
+# Jefes de hogar por sexo y departamento
+
+```{r}
+jefes <- personas %>% 
+      filter(parent.jefe == 1, sexo != 9) %>%
+      group_by(sexo, depto) %>%
+      summarise(conteo = n()) %>%
+      mutate(porcentaje = round((conteo / sum(conteo))*100,2))
+```
+
+# Jefes de hogar por sexo y departamento
+
+```{r, echo = FALSE}
+knitr::kable(jefes)
+```
+
+# Jefes de hogar por sexo y departamento
+
+La tabla se despliega de manera poco amigable para la hora de la interpretación. Nos gustaría tener como filas los departamentos, el sexo en columnas y en las celdas los valores de la variable `porcentaje`.
+
+Esto lo podemos hacer fácilmente con la función `spread()`
+
+# Función spread()
+
+```{r}
+jefes <- jefes %>% select(-conteo) #sacamos a conteo
+
+jefes <- jefes %>% spread(key = sexo, value = porcentaje)
+```
+
+## Argumentos de la función `spread()`
+
+-  La base de datos (se la pasamos afuera encadenandola con `%>%`)
+-  \textbf{key}: Se le indica la columna que contiene la información que va a ir a columnas
+-  \textbf{value}: Se le indica el valor que va a ir en las celdas.
+
+# Función spead()
+
+```{r, echo = FALSE}
+knitr::kable(jefes) 
+```
+
+
