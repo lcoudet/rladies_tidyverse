@@ -33,7 +33,7 @@ Existen \textbf{6 funciones} que nos permiten resolver una amplia gama de desafí
  
 # Funciones útiles - Select helpers
 
-Existen varias funciones que nos permiten seleccionar variables en función de sus nombres. Alguna de ellas son:
+Tidyverse también nos provee de varias funciones que nos permiten seleccionar variables en función de sus nombres. Alguna de ellas son:
 
 ## 
 
@@ -120,8 +120,6 @@ dim(personas)
 
 # Seleccionamos columnas con select()
 
-Dos opciones: 
-
 - Si queremos seleccionar una variable ponemos su nombre.
 -  Si queremos sacar una variable ponemos su nombre con un signo de `-` adelante.
 -  Si queremos seleccionar (o sacar) un un rango seguido de columnas, por ej de la A a la F, lo hacemos con `A:F`, o bien `-(A:F)`.
@@ -151,7 +149,6 @@ names(personas)
 
 ```{r, echo = FALSE}
 personas <- readr::read_csv('Personas_Ola_3.csv')
-dim(personas)
 ```
 
 # Renombramos columnas con rename
@@ -174,11 +171,15 @@ personas <- personas %>%
                      benef.esp = h10)
 ```
 
+# Variable nper y niño de la muestra
+
+La variable `nper` etiqueta con un número a cada miembro del hogar. No sabemos a priori qué valor toma para los niños seleccionados en la muestra.
+
+Sospechamos que cuando toma valor 1 se trata del niño de la muestra.
+
+Estos niños deberían tener todos menos de 20 años, por lo que filtramos la base por edad, agrupamos según `nper` y contamos la cantidad de casos para cada grupo.
+
 # Filtramos observaciones con filter() y hacemos resúmenes por grupos
-
-La variable `nper` etiqueta con un número a cada miembro del hogar. Sospechamos que cuando toma valor 1 se trata del niño seleccionado en la muestra.
-
-Estos niños deberían tener todos menos de 20 años, por lo que filtramos la base por edad y agrupamos según `nper`.
 
 ```{r}
 edades <- personas %>% filter(edad < 20) %>% 
@@ -209,10 +210,18 @@ knitr::kable(head(edades, 8))
 
 # Jefes de hogar por sexo
 
--  Filtramos la categoría 1 de la variable `parent.jefe` que corresponde a los jefes de hogar.
+Tenemos información sobre los jefes de hogar para cada hogar correspondiente a los niños de la muestra.
+
+Nos interesa descubrir si hay una diferencia por sexo, es decir si hay predominancia de hogares con jefe de hogar hombre o mujer.
+
+## Para ello
+
+-  Filtramos la variable `parent.jefe` para los casos que toma valor 1 que corresponde a los jefes de hogar.
 -  Agrupamos por sexo.
 -  Contamos cuantos casos hay en cada categoría (9=NS/NC).
 -  Creamos una variable que indique el porcentaje.
+
+# Jefes de hogar por sexo
 
 ```{r}
 sexo <- personas %>% filter(parent.jefe == 1) %>% 
@@ -226,13 +235,13 @@ sexo <- personas %>% filter(parent.jefe == 1) %>%
 knitr::kable(sexo)
 ```
 
-# Joins
+# Análisis territorial
 
-Nos gustaría tener la variable \textbf{departamento} que indica el departamento al cuál pertenece el hogar de la muestra.
+Nos gustaría tener la variable \textbf{departamento} que indica el departamento al cuál pertenece el hogar de la muestra, a los efectos de observar si el resultado anterior presenta \textbf{disparidades a nivel territorial}.
 
 Tenemos está información en la \textbf{base de Hogares} y una variable de matcheo que es `nform`, la cuál indica el \textbf{número de formulario} y vale lo mismo para todos los miembros del hogar.
 
-Nos interesa mantener todas las observaciones de la base de personas, y pegarles el departamento al cuál corresponden, por lo cual usamos la función `left_join`.
+Nos interesa mantener todas las observaciones de la base de personas, y "pegarles" el departamento al cuál corresponden, por lo cual usamos la función `left_join`.
 
 # left_join()
 
@@ -311,4 +320,29 @@ jefes <- jefes %>% spread(key = sexo, value = porcentaje)
 knitr::kable(jefes) 
 ```
 
+# Jugamos con la tabla
+
+Si quisieramos volver a la tabla anterior, lo hacemos con la función opuesta a `spread()`, que es `gather()`.
+
+`gather()`, al igual que spread, precisa los argumentos \textbf{key} y \textbf{value}.
+
+## Argumentos de la función `gather()`
+
+-  \textbf{key}: El nombre de la variable cuyos valores se encuentran como nombres de columnas.
+-  \textbf{value}: El nombre de la variable cuyos valores están "dispersos" por todas las celdas.
+
+# Función gather()
+
+```{r}
+jefes <- jefes %>% 
+      gather(key = 'sexo', value = 'porcentaje', -depto)
+```
+
+\textbf{\underline{Observación}}: Dentro de gather pasamos `-depto`, ya que sino se cree que la variable departamento es otra de las categorías de la variable sexo y la gatherea también.
+
+# Función gather()
+
+```{r, echo = FALSE}
+knitr::kable(jefes) 
+```
 
