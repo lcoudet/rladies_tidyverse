@@ -27,7 +27,7 @@ Existen \textbf{6 funciones} que nos permiten resolver una amplia gama de desafí
 -  Levantar observaciones por sus valores: `filter()`
 -  Reordenar filas: `arrange()`
 -  Levantar variables por sus nombres: `select()`
--  Crear nuevas variables a partir de existentes `mutate()` (y `transmutate()`)
+-  Crear nuevas variables a partir de existentes `mutate()` (y `transmute()`)
 -  Agrupar observarciones con `group_by()`
 -  Generar medidas de resúmen a partir de distintos valores: `summarise()`
  
@@ -91,13 +91,6 @@ Se recoge información  referente a múltiples dimensiones del bienestar de los ni
 -  De \textbf{hogares}, con información más enfocada al niño, sus capacidades de relacionamiento, emociones, amigos, etc.
 
 \textbf{Utilizamos la base de personas correspondiente a la Tercer Ola de relevamiento}
-
-# Qué buscamos?
-
-##
-
-AGREGAR
-
 
 # Paso 1: Leemos los datos
 
@@ -221,7 +214,7 @@ Nos interesa descubrir si hay una diferencia por sexo, es decir si hay predomina
 -  Contamos cuantos casos hay en cada categoría (9=NS/NC).
 -  Creamos una variable que indique el porcentaje.
 
-# Jefes de hogar por sexo
+# Jefes de hogar por sexo - mutate()
 
 ```{r}
 sexo <- personas %>% filter(parent.jefe == 1) %>% 
@@ -230,6 +223,22 @@ sexo <- personas %>% filter(parent.jefe == 1) %>%
       mutate(porcentaje = round(conteo / sum(conteo), 2)*100)
 ```
 
+
+```{r, echo=FALSE}
+knitr::kable(sexo)
+```
+
+# Jefes de hogar por sexo - transmute()
+
+La diferencia con `mutate()` es que me deja sólo la variable que genero a partir de la función `transmute()`, mientras que `mutate()` incorpora la nueva variable al final del data set.
+
+```{r}
+sexo <- personas %>% filter(parent.jefe == 1) %>% 
+      group_by(sexo) %>% 
+      summarise(conteo = n()) %>% 
+      transmute(porcentaje = round(conteo / sum(conteo), 2)*100,
+                sexo = sexo) 
+```
 
 ```{r, echo=FALSE}
 knitr::kable(sexo)
@@ -345,4 +354,119 @@ jefes <- jefes %>%
 ```{r, echo = FALSE}
 knitr::kable(jefes) 
 ```
+
+# Taller
+
+Anteriormente habíamos encontrado que el 56% de los jefes de hogar son hombres mientras que el 44% mujeres.
+
+Nos interesa sebr cuál es la \textit{situación conyugal} de esas jefas de hogar a los efectos de determinar si son jefas de hogar porque no tienen pareja o si teniendo pareja declararon ser jefas de hogar, lo cual sería evidencia de \textbf{empoderamiento femenino}.
+
+## Actividad 1: Situación conyugal de las jefas de hogar
+
+-  Calcular, para las jefas de hogar, cuántas observaciones hay en cada nivel de las variable situación conyugal (`f2`).
+
+-  Crear una variable que se llame \textit{porcentaje} que indique el porcentaje de mujeres jefas de hogar para cada categoría de la variable situación conyugal (`f2`).
+
+```{r, echo = FALSE}
+personas <- readr::read_csv('Personas_Ola_3.csv')
+```
+
+# Solución actividad 1: Situación conyugal de las jefas de hogar
+
+```{r}
+sit.con <- personas %>% 
+      filter( f12 == 2 & f10 == 1) %>% 
+      group_by(f2) %>%
+      summarise(conteo = n())
+```
+
+```{r, echo=FALSE}
+knitr::kable(sit.con)
+```
+
+
+# Solución actividad 1: Situación conyugal de las jefas de hogar
+
+```{r}
+sit.con <- personas %>% 
+      filter( f12 == 2 & f10 == 1) %>% 
+      group_by(f2) %>%
+      summarise(conteo = n()) %>%
+      mutate(porcentaje = round((conteo / sum(conteo))*100),2) %>%
+      arrange(desc(porcentaje))
+```
+
+```{r, echo=FALSE}
+knitr::kable(sit.con)
+```
+
+# Tareas en la ocupación principal
+
+En lo que respecta al ámbito laboral, queremos saber si existe una diferencia de calificación en las tareas que realizan las jefas de hogar en sus trabajos respecto a las que realizan los jefes.
+
+## Actividad 2: Tareas en la ocupación principal de los jefes de hogar por sexo
+
+-  Calcular los porcentajes de hombres y de mujeres jefes de hogar para cada nivel de la variables \textit{tareas que realiza en la ocupación principal} (`g5`)
+
+-  \textbf{observación}: previo a hacer los calculos sacar los NAs, como se realiza en el código a continuación.
+
+```{r}
+tareas <- personas %>% 
+      filter(!is.na(f12), !is.na(g5), f12 != 9)
+```
+
+# Solución actividad 2: Tareas en la ocupación principal
+
+```{r}
+tareas <- personas %>% 
+      filter(!is.na(f12), !is.na(g5), f12 != 9) %>% 
+      filter(f10 == 1) %>%
+      group_by(f12, g5) %>%
+      summarise(conteo = n()) 
+```
+
+
+```{r}
+tareas <- personas %>% 
+      filter(!is.na(f12), !is.na(g5), f12 != 9) %>% 
+      filter(f10 == 1) %>%
+      group_by(f12, g5) %>%
+      summarise(conteo = n()) %>%
+      mutate(porcentaje = round((conteo / sum(conteo))*100,2))
+```
+
+# Solución actividad 2: Tareas en la ocupación principal
+
+```{r}
+knitr::kable(tareas)
+```
+
+# Tareas en la ocupación principal
+
+La tabla anterior no nos gusta porque no podemos visualizar de una manera entendible los resultados.
+
+
+## Actividad 3: tidy data
+
+-  Ordenar la tabla anterior de forma tal que en las columnas aparezca el sexo y en las celdas los valores de la variable porcentaje. 
+
+
+# Solución actividad 3: tidy data
+
+```{r}
+tareas <- tareas %>% select(-conteo)
+
+tareas <- tareas %>% spread(key = f12, value = porcentaje)
+
+tareas <- tareas %>% arrange(desc(`2`))
+```
+
+# Solución actividad 3: tidy data
+
+```{r}
+knitr::kable(tareas)
+```
+
+# TERMINAMOS!
+
 
