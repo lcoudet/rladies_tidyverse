@@ -175,15 +175,26 @@ Estos niños deberían tener todos menos de 20 años, por lo que filtramos la base 
 # Filtramos observaciones con filter() y hacemos resúmenes por grupos
 
 ```{r}
-edades <- personas %>% filter(edad < 20) %>% 
+npersona <- personas %>% filter(edad < 20) %>% 
       group_by(nper) %>% 
       summarise(conteo = n()) 
 ```
 
+# Operadores lógicos
+
+## Algunos operadores lógicos útiles a la hora de filtrar:
+
+-  Mayor a: `>` 
+-  Menor a: `<`
+-  Mayor igual a: `>=`  
+-  Menor igual a: `<=`
+-  Igual a: `==`
+-  Distinto de: `!=`
+
 # Filtramos observaciones con filter() y hacemos resúmenes por grupos
 
 ```{r, echo=FALSE}
-knitr::kable(head(edades, 6))
+knitr::kable(head(npersona, 6))
 ```
 
 `nper == 1` contiene 2137 observaciones, lo cuál coincide con la cantidad de niños en la muestra.
@@ -194,11 +205,11 @@ Lo hacemos con la función `arrange()`.
 # Ordenamos filas con arrange()
 
 ```{r}
-edades <- arrange(edades, desc(conteo))
+npersona <- arrange(npersona, desc(conteo))
 ```
 
 ```{r, echo=FALSE}
-knitr::kable(head(edades, 8))
+knitr::kable(head(npersona, 8))
 ```
 
 # Jefes de hogar por sexo
@@ -292,7 +303,7 @@ personas <- personas %>%
 ```{r}
 jefes <- personas %>% 
       filter(parent.jefe == 1, sexo != 9) %>%
-      group_by(sexo, depto) %>%
+      group_by(depto, sexo) %>%
       summarise(conteo = n()) %>%
       mutate(porcentaje = round((conteo / sum(conteo))*100,2))
 ```
@@ -357,6 +368,25 @@ knitr::kable(jefes)
 
 # Taller
 
+Pasos previos:
+
+-  Desde la consola de R, instalamos el paquete `tidyverse`: `install.packages('tidyverse')`.
+
+-  Cargamos la librería: `library(tidyverse)`.
+
+-  Bajamos la base de datos desde la página de la fcea: ``
+
+
+-  Le indicamos a R el directorio de trabajo: setwd('ruta/al/directorio')
+
+-  Cargamos los datos:
+
+```{r, eval=FALSE}
+personas <- readr::read_csv('Personas_Ola_3.csv')`
+```
+
+# Taller
+
 Anteriormente habíamos encontrado que el 56% de los jefes de hogar son hombres mientras que el 44% mujeres.
 
 Nos interesa sebr cuál es la \textit{situación conyugal} de esas jefas de hogar a los efectos de determinar si son jefas de hogar porque no tienen pareja o si teniendo pareja declararon ser jefas de hogar, lo cual sería evidencia de \textbf{empoderamiento femenino}.
@@ -392,7 +422,7 @@ sit.con <- personas %>%
       filter( f12 == 2 & f10 == 1) %>% 
       group_by(f2) %>%
       summarise(conteo = n()) %>%
-      mutate(porcentaje = round((conteo / sum(conteo))*100),2) %>%
+      mutate(porcentaje = round((conteo / sum(conteo))*100,2)) %>%
       arrange(desc(porcentaje))
 ```
 
@@ -412,25 +442,25 @@ En lo que respecta al ámbito laboral, queremos saber si existe una diferencia de
 
 ```{r}
 tareas <- personas %>% 
-      filter(!is.na(f12), !is.na(g5), f12 != 9)
+      filter(!is.na(f12), !is.na(g5), g5 != 99, f12 != 9)
 ```
 
 # Solución actividad 2: Tareas en la ocupación principal
 
 ```{r}
 tareas <- personas %>% 
-      filter(!is.na(f12), !is.na(g5), f12 != 9) %>% 
+      filter(!is.na(f12), !is.na(g5), f12 != 9, g5 != 99) %>% 
       filter(f10 == 1) %>%
-      group_by(f12, g5) %>%
+      group_by(g5, f12) %>%
       summarise(conteo = n()) 
 ```
 
 
 ```{r}
 tareas <- personas %>% 
-      filter(!is.na(f12), !is.na(g5), f12 != 9) %>% 
+      filter(!is.na(f12), !is.na(g5), g5 != 99, f12 != 9) %>% 
       filter(f10 == 1) %>%
-      group_by(f12, g5) %>%
+      group_by(g5, f12) %>%
       summarise(conteo = n()) %>%
       mutate(porcentaje = round((conteo / sum(conteo))*100,2))
 ```
@@ -468,5 +498,17 @@ knitr::kable(tareas)
 ```
 
 # TERMINAMOS!
+
+![](logo.png)
+
+# Referencias
+
+Hadley Wickham, Romain Francois, Lionel Henry and Kirill Müller (2017). dplyr: A Grammar of Data Manipulation. R package version 0.7.4. https://CRAN.R-project.org/package=dplyr
+
+Hadley Wickham and Lionel Henry (2017). tidyr: Easily Tidy Data with 'spread()' and 'gather()' Functions. R package version 0.7.1.https://CRAN.R-project.org/package=tidyr
+
+Hadley Wickham, Jim Hester and Romain Francois (2017). readr: Read Rectangular Text Data. R package version 1.1.1. https://CRAN.R-project.org/package=readr
+
+Hadley Wickam and Garett Grolemund, R for Data Science. Import, tidy, transform, visualize, and model data (2016).
 
 
