@@ -374,7 +374,7 @@ Pasos previos:
 
 -  Cargamos la librería: `library(tidyverse)`.
 
--  Bajamos la base de datos desde la página de la fcea: ``
+-  Bajamos la base de datos desde la página de la fcea: `http://fcea.edu.uy/datos/bases-de-datos.html`
 
 
 -  Le indicamos a R el directorio de trabajo: setwd('ruta/al/directorio')
